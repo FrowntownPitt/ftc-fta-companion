@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         FTC FTA/FS assistant
-// @version      0.5.0
+// @version      0.5.1
 // @description  Augment the match cycle time with some FS fun stuff
 // @author       Austin Frownfelter
 // @match        http://*/event/*/schedule/
@@ -11,6 +11,21 @@
 // @grant        GM.addStyle
 // @require      http://code.jquery.com/jquery-3.7.1.min.js#sha256=/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
 // ==/UserScript==
+
+/*
+0.1.0 - Add row/team highlights on click on match schedule
+0.2.0 - Expand team highlights to all other matches for that team
+0.3.0 - Extend from just match schedule to include practice matches and cycle time report
+0.3.1 - Highlight the most recent match for each team when a row is selected - only working on cycle time page
+0.3.2 - Fix 0.3.0 breaking schedule team selection, make 0.3.1 work for all schedule/report pages
+0.4.0 - Highlight the most recent match for each team when a row is selected
+0.4.1 - Highlight the next team for the current selected row as well
+0.4.2 - Make it work on more than just localhost
+0.4.3 - GM.addStyle, make it work on Safari iOS (iPadOS)
+0.4.4 - alpha - add to playoff with broken functionality
+0.5.0 - Make selected row persist across refreshes for my sanity on cycle time reports
+0.5.1 - Add a refresh button because iPad Safari is annoying and forces you to scroll the whole way up to show the chrome
+*/
 
 (function() {
     'use strict';
@@ -304,6 +319,39 @@ ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
         }
     }
 
+    const refreshPage = (event) => {
+        console.log("Refresh!", event);
+        window.location.reload();
+    }
+
+    const addRefreshButton = () => {
+        const refreshButtonDOM = `
+<div class="fta-refresh-button">
+<i class="fta-refresh-button-icon"/>
+</div>
+`
+       GM.addStyle(`
+.fta-refresh-button-icon::before {
+    content: "🔄";
+    font-size: 40px;
+    font-style: normal;
+    line-height: 40px;
+}
+
+.fta-refresh-button {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 48px;
+    height: 48px;
+    margin: 12px;
+}
+`)
+        const $refreshButton = $(refreshButtonDOM);
+        $('body').append($refreshButton);
+        $refreshButton.bind('click', refreshPage);
+    }
+
     waitForElement(pageLoadedIdentifier, function () {
         console.log("### WAITED, RUNNING");
         createTeamHighlightHandler();
@@ -311,6 +359,8 @@ ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
 
         restorePersistedRow();
         restorePersistedTeam();
+
+        addRefreshButton();
     });
 })();
 
