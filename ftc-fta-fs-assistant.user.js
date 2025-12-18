@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         FTC FTA/FS assistant
-// @version      0.4.3
+// @version      0.4.4
 // @description  Augment the match cycle time with some FS fun stuff
 // @author       Austin Frownfelter
 // @match        http://*/event/*/schedule/
 // @match        http://*/event/*/practice/
 // @match        http://*/event/*/reports/cycle/
+// @match        http://*/event/*/playoff/
 // @grant        GM_addStyle
 // @grant        GM.addStyle
 // @require      http://code.jquery.com/jquery-3.7.1.min.js#sha256=/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
