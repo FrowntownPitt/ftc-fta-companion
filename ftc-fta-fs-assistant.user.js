@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         FTC FTA/FS assistant
-// @version      0.3.2
+// @version      0.4.1
 // @description  Augment the match cycle time with some FS fun stuff
 // @author       Austin Frownfelter
 // @match        http://localhost/event/*/schedule/
@@ -35,7 +35,7 @@
             //rowSelected: '#e9e935',
             //rowSelectedHover: '#fafa3e',
             rowHover: '#fcfc6ab8',
-            team: '#47ed47b2',
+            team: '#ffd483',
             teamOther: '#ed9547b2',
             latest0: '#86b5fe',
             latest1: '#86e7fe',
@@ -52,14 +52,24 @@
             $(el).addClass(`latest-team latest-team-${ind}`);
             return $(el).attr('team');
         });
-        console.log("toggling selected row", targetRowTeams);
         const prevAll = $targetRow.prevAll()
         const prevTeams = targetRowTeams.map((ind, el) => {
             const $prevTeam = prevAll.find(`[team=${el}]`).last();
             $prevTeam.addClass(`latest-team latest-team-${ind}`);
             return $prevTeam;
         })
-        console.log(prevTeams);
+    }
+    var showRecentNextScheduledTeams = ($targetRow) => {
+        const targetRowTeams = $targetRow.find('.team').map((ind,el) => {
+            $(el).addClass(`latest-team latest-team-${ind}`);
+            return $(el).attr('team');
+        });
+        const nextAll = $targetRow.nextAll()
+        const nextTeams = targetRowTeams.map((ind, el) => {
+            const $nextTeam = nextAll.find(`[team=${el}]`).first();
+            $nextTeam.addClass(`latest-team latest-team-${ind}`);
+            return $nextTeam;
+        })
     }
     var removeRecentPreviouslyScheduledTeams = () => {
         $('.latest-team').removeClass('latest-team-0');
@@ -70,9 +80,6 @@
     }
 
     var toggleSelectedRow = (target) => {
-        console.log("Toggling row");
-        console.log("clicking target", target);
-
         const targetRow = target.currentTarget;
 
         if (!!$activeRow) {
@@ -89,8 +96,8 @@
             }
         }
 
-        //console.log("Row", targetRow);
-        showRecentPreviouslyScheduledTeams($(targetRow))
+        showRecentPreviouslyScheduledTeams($(targetRow));
+        showRecentNextScheduledTeams($(targetRow));
         $activeRow = $(targetRow);
         $activeRow.addClass(rowSelectedClass);
     }
@@ -101,7 +108,6 @@
         }
         const $teamOthers = $(`[team=${team}]:not('.team-selected')`);
         $teamOthers.addClass(teamSelectedOtherClass);
-        console.log($teamOthers);
     }
     var clearSelectedTeamMatches = (team) => {
         if (!team) {
@@ -109,21 +115,13 @@
         }
         const $teamOthers = $(`[team=${team}]`);
         $teamOthers.removeClass(teamSelectedOtherClass);
-        console.log("clearing", $teamOthers);
     }
 
     var toggleSelectedTeam = (target) => { // Event
-        //target.stopImmediatePropagation();
-        //target.preventDefault();
-        console.log("Toggling team", target);
-        //console.log("team clicking target", target);
 
         const targetItem = target.target;
         const team = $(targetItem).attr('team');
         const activeTeam = $activeTeam?.attr('team');
-
-        console.log("Toggling team", team);
-        //console.log("Team", targetItem);
 
         if (!$(targetItem).hasClass('team')) {
             // clear the team when something that isn't a team is clicked
@@ -137,9 +135,6 @@
             return;
         }
 
-        //console.log($activeTeam)
-        //console.log($(targetItem));
-
         target.stopImmediatePropagation();
 
         if (!!$activeTeam) {
@@ -147,7 +142,6 @@
             if ($activeTeam[0] === $(targetItem)[0]) {
                 // remove the highlight when clicking the active team
                 remove = true;
-                //target.stopPropagation();
             }
             $activeTeam.removeClass(teamSelectedClass);
             clearSelectedTeamMatches(activeTeam);
@@ -165,7 +159,6 @@
 
 
     var createRowHighlightHandler = function () {
-        console.log("### Creating row highlight handler");
         const $matchTableRowIds = $(matchTableRowId);
         $matchTableRowIds.bind('click', toggleSelectedRow);
         $matchTableRowIds.addClass(rowCustomStyleClass);
@@ -199,7 +192,6 @@ ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
     };
 
     var addTeamNumberSelector = function() {
-        console.log("### Adding team number to team entries");
         const $teamElements = $('.team');
 
         $teamElements.map((ind, el) => {
@@ -207,15 +199,10 @@ ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
             const team = text.replaceAll("*","").trim();
             $(el).addClass(`team-${team}`);
             $(el).attr('team',team);
-            console.log(text, team);
         });
-
-        console.log("### teams", $teamElements);
     }
 
     var createTeamHighlightHandler = function () {
-        console.log("### Creating team highlight handler");
-        console.log("Team already exists", $(`${matchTableRowId} .team`).length);
         if ($(`${matchTableRowId} .team`).length > 0) { // team already exists (cycle time report)
             $(red1CycleTimeSelector).addClass('red-1');
             $(red2CycleTimeSelector).addClass('red-2');
@@ -229,7 +216,6 @@ ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
         }
 
         addTeamNumberSelector();
-        //$(`${matchTableRowId}`).bind('click', toggleSelectedTeam);
         $(`${matchTableRowId}`).click(toggleSelectedTeam);
 
         GM_addStyle(`
