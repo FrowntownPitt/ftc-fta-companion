@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         FTC FTA/FS assistant
-// @version      0.1.0
+// @version      0.2.0
 // @description  Augment the match cycle time with some FS fun stuff
 // @author       Austin Frownfelter
 // @match        http://localhost/event/*/schedule/
@@ -20,6 +20,7 @@
     const rowCustomStyleClass = 'my-fta';
     const rowSelectedClass = 'row-selected';
     const teamSelectedClass = 'team-selected';
+    const teamSelectedOtherClass = 'team-selected-other';
 
     const styles = {
         highlights: {
@@ -28,7 +29,8 @@
             //rowSelected: '#e9e935',
             //rowSelectedHover: '#fafa3e',
             rowHover: '#fcfc6ab8',
-            team: '#47ed47b2'
+            team: '#47ed47b2',
+            teamOther: '#ed9547b2'
         }
     }
 
@@ -59,6 +61,17 @@
         $activeRow.addClass(rowSelectedClass);
     }
 
+    var addSelectedTeamMatches = (team) => {
+        const $teamOthers = $(`[team=${team}]:not('.team-selected')`);
+        $teamOthers.addClass(teamSelectedOtherClass);
+        console.log($teamOthers);
+    }
+    var clearSelectedTeamMatches = (team) => {
+        const $teamOthers = $(`[team=${team}]`);
+        $teamOthers.removeClass(teamSelectedOtherClass);
+        console.log("clearing", $teamOthers);
+    }
+
     var toggleSelectedTeam = (target) => { // Event
         //target.stopImmediatePropagation();
         //target.preventDefault();
@@ -66,14 +79,21 @@
         //console.log("team clicking target", target);
 
         const targetItem = target.target;
+        const team = $(targetItem).attr('team');
+        const activeTeam = $activeTeam?.attr('team');
+
+        console.log("Toggling team", team);
         //console.log("Team", targetItem);
 
         if (!$(targetItem).hasClass('team')) {
             // clear the team when something that isn't a team is clicked
+
+            clearSelectedTeamMatches(activeTeam);
             if (!!$activeTeam) {
                 $activeTeam.removeClass(teamSelectedClass);
                 $activeTeam = undefined;
             }
+
             return;
         }
 
@@ -90,6 +110,7 @@
                 //target.stopPropagation();
             }
             $activeTeam.removeClass(teamSelectedClass);
+            clearSelectedTeamMatches(activeTeam);
             $activeTeam = undefined;
             if (remove) {
                 return
@@ -98,6 +119,7 @@
 
         $activeTeam = $(targetItem);
         $activeTeam.addClass(teamSelectedClass);
+        addSelectedTeamMatches(team);
 
     }
 
@@ -124,18 +146,39 @@ ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
 `);
     };
 
+    var addTeamNumberSelector = function() {
+        console.log("### Adding team number to team entries");
+        const $teamElements = $('.team');
+
+        $teamElements.map((ind, el) => {
+            const text = el.innerText;
+            const team = text.replaceAll("*","");
+            $(el).addClass(`team-${team}`);
+            $(el).attr('team',team);
+            console.log(text, team);
+        });
+
+        console.log("### teams", $teamElements);
+    }
+
     var createTeamHighlightHandler = function () {
         console.log("### Creating team highlight handler");
         $(red1Selector).addClass('team red-1');
         $(red2Selector).addClass('team red-2');
         $(blue1Selector).addClass('team blue-1');
         $(blue2Selector).addClass('team blue-2');
+
+        addTeamNumberSelector();
         //$(`${matchTableRowId}`).bind('click', toggleSelectedTeam);
         $(`${matchTableRowId}`).click(toggleSelectedTeam);
 
         GM_addStyle(`
 .team.team-selected {
   background-color: ${styles.highlights.team} !important;
+}
+
+.team.team-selected-other {
+  background-color: ${styles.highlights.teamOther} !important;
 }
 `);
     };
