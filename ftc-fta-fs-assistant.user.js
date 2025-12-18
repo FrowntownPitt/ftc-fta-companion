@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         FTC FTA/FS assistant
-// @version      0.3.1
+// @version      0.3.2
 // @description  Augment the match cycle time with some FS fun stuff
 // @author       Austin Frownfelter
 // @match        http://localhost/event/*/schedule/
@@ -115,7 +115,7 @@
     var toggleSelectedTeam = (target) => { // Event
         //target.stopImmediatePropagation();
         //target.preventDefault();
-        console.log("Toggling team");
+        console.log("Toggling team", target);
         //console.log("team clicking target", target);
 
         const targetItem = target.target;
@@ -215,7 +215,8 @@ ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
 
     var createTeamHighlightHandler = function () {
         console.log("### Creating team highlight handler");
-        if ($('.team')) { // team already exists (cycle time report)
+        console.log("Team already exists", $(`${matchTableRowId} .team`).length);
+        if ($(`${matchTableRowId} .team`).length > 0) { // team already exists (cycle time report)
             $(red1CycleTimeSelector).addClass('red-1');
             $(red2CycleTimeSelector).addClass('red-2');
             $(blue1CycleTimeSelector).addClass('blue-1');
