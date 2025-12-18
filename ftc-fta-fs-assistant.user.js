@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         FTC FTA/FS assistant
-// @version      0.3.0
+// @version      0.3.1
 // @description  Augment the match cycle time with some FS fun stuff
 // @author       Austin Frownfelter
 // @match        http://localhost/event/*/schedule/
@@ -36,12 +36,38 @@
             //rowSelectedHover: '#fafa3e',
             rowHover: '#fcfc6ab8',
             team: '#47ed47b2',
-            teamOther: '#ed9547b2'
+            teamOther: '#ed9547b2',
+            latest0: '#86b5fe',
+            latest1: '#86e7fe',
+            latest2: '#e486fe',
+            latest3: '#8ffe86'
         }
     }
 
     var $activeRow = undefined;
     var $activeTeam = undefined;
+
+    var showRecentPreviouslyScheduledTeams = ($targetRow) => {
+        const targetRowTeams = $targetRow.find('.team').map((ind,el) => {
+            $(el).addClass(`latest-team latest-team-${ind}`);
+            return $(el).attr('team');
+        });
+        console.log("toggling selected row", targetRowTeams);
+        const prevAll = $targetRow.prevAll()
+        const prevTeams = targetRowTeams.map((ind, el) => {
+            const $prevTeam = prevAll.find(`[team=${el}]`).last();
+            $prevTeam.addClass(`latest-team latest-team-${ind}`);
+            return $prevTeam;
+        })
+        console.log(prevTeams);
+    }
+    var removeRecentPreviouslyScheduledTeams = () => {
+        $('.latest-team').removeClass('latest-team-0');
+        $('.latest-team').removeClass('latest-team-1');
+        $('.latest-team').removeClass('latest-team-2');
+        $('.latest-team').removeClass('latest-team-3');
+        $('.latest-team').removeClass('latest-team');
+    }
 
     var toggleSelectedRow = (target) => {
         console.log("Toggling row");
@@ -56,6 +82,7 @@
                 remove = true;
             }
             $activeRow.removeClass(rowSelectedClass);
+            removeRecentPreviouslyScheduledTeams();
             $activeRow = undefined;
             if (remove) {
                 return;
@@ -63,6 +90,7 @@
         }
 
         //console.log("Row", targetRow);
+        showRecentPreviouslyScheduledTeams($(targetRow))
         $activeRow = $(targetRow);
         $activeRow.addClass(rowSelectedClass);
     }
@@ -154,6 +182,18 @@ ${matchTableRowId}:hover {
 ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:focus,
 ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
   background-color: ${styles.highlights.rowSelectedHover} !important;
+}
+.latest-team-0 {
+  background-color: ${styles.highlights.latest0} !important;
+}
+.latest-team-1 {
+  background-color: ${styles.highlights.latest1} !important;
+}
+.latest-team-2 {
+  background-color: ${styles.highlights.latest2} !important;
+}
+.latest-team-3 {
+  background-color: ${styles.highlights.latest3} !important;
 }
 `);
     };
