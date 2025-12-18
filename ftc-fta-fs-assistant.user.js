@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         FTC FTA/FS assistant
-// @version      0.4.4
+// @version      0.5.0
 // @description  Augment the match cycle time with some FS fun stuff
 // @author       Austin Frownfelter
 // @match        http://*/event/*/schedule/
@@ -32,6 +32,9 @@
     const rowSelectedClass = 'row-selected';
     const teamSelectedClass = 'team-selected';
     const teamSelectedOtherClass = 'team-selected-other';
+
+    const persistentRowKey = "fta-persisted-active-row";
+    const persistentTeamKey = "fta-persisted-active-team";
 
     const styles = {
         highlights: {
@@ -84,6 +87,33 @@
         $('.latest-team').removeClass('latest-team');
     }
 
+    const clearActiveRow = () => {
+        $activeRow = undefined;
+        //localStorage.setItem(persistentRowKey, undefined);
+        localStorage.removeItem(persistentRowKey);
+    }
+
+    const clearActiveTeam = () => {
+        $activeTeam = undefined;
+        //localStorage.setItem(persistentTeamKey, undefined);
+        localStorage.removeItem(persistentTeamKey);
+    }
+
+    const setActiveRow = ($targetRow) => {
+        $activeRow = $targetRow;
+        const row = $targetRow.attr('fta-row');
+        localStorage.setItem(persistentRowKey, row);
+    }
+
+    const setActiveTeam = ($targetTeam) => {
+        $activeTeam = $targetTeam;
+        console.log("#### $activeTeam", $activeTeam);
+        const row = $targetTeam.parents('.my-fta').attr('fta-row');
+        const team = $activeTeam.attr('team');
+        console.log("#### row, team", row, team);
+        localStorage.setItem(persistentTeamKey, JSON.stringify({row: row, team: team}));
+    }
+
     var toggleSelectedRow = (target) => {
         const targetRow = target.currentTarget;
 
@@ -95,7 +125,7 @@
             }
             $activeRow.removeClass(rowSelectedClass);
             removeRecentPreviouslyScheduledTeams();
-            $activeRow = undefined;
+            clearActiveRow();
             if (remove) {
                 return;
             }
@@ -103,7 +133,7 @@
 
         showRecentPreviouslyScheduledTeams($(targetRow));
         showRecentNextScheduledTeams($(targetRow));
-        $activeRow = $(targetRow);
+        setActiveRow($(targetRow));
         $activeRow.addClass(rowSelectedClass);
     }
 
@@ -134,7 +164,7 @@
             clearSelectedTeamMatches(activeTeam);
             if (!!$activeTeam) {
                 $activeTeam.removeClass(teamSelectedClass);
-                $activeTeam = undefined;
+                clearActiveTeam();
             }
 
             return;
@@ -150,13 +180,13 @@
             }
             $activeTeam.removeClass(teamSelectedClass);
             clearSelectedTeamMatches(activeTeam);
-            $activeTeam = undefined;
+            clearActiveTeam();
             if (remove) {
                 return
             }
         }
 
-        $activeTeam = $(targetItem);
+        setActiveTeam($(targetItem));
         $activeTeam.addClass(teamSelectedClass);
         addSelectedTeamMatches(team);
 
@@ -167,6 +197,10 @@
         const $matchTableRowIds = $(matchTableRowId);
         $matchTableRowIds.bind('click', toggleSelectedRow);
         $matchTableRowIds.addClass(rowCustomStyleClass);
+        $matchTableRowIds.map((ind,el) => {
+            $(el).addClass(`my-fta-row-${ind}`);
+            $(el).attr('fta-row', ind);
+        });
 
         GM.addStyle(`
 ${matchTableRowId}:focus,
@@ -245,9 +279,46 @@ ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
         }
     };
 
+    const restorePersistedRow = () => {
+        const persistedRow = localStorage.getItem(persistentRowKey);
+        if (persistedRow) {
+            const $persistedRow = $(`.my-fta[fta-row="${persistedRow}"]`);
+            if ($persistedRow.length > 0) {
+                $persistedRow.click();
+            }
+        }
+    }
+
+    const restorePersistedTeam = () => {
+        const persistedTeam = localStorage.getItem(persistentTeamKey);
+        if (persistedTeam) {
+            const obj = JSON.parse(persistedTeam)
+            const row = obj.row;
+            const team = obj.team;
+            if (row && team) {
+                const $persistedTeam = $(`.my-fta[fta-row=${row}] .team[team=${team}]`);
+                if ($persistedTeam.length > 0) {
+                    $persistedTeam.click();
+                }
+            }
+        }
+    }
+
     waitForElement(pageLoadedIdentifier, function () {
         console.log("### WAITED, RUNNING");
         createTeamHighlightHandler();
         createRowHighlightHandler();
+
+        restorePersistedRow();
+        restorePersistedTeam();
     });
 })();
+
+
+
+
+
+
+
+
+
