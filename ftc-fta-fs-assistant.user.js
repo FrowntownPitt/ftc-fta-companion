@@ -1,9 +1,11 @@
 // ==UserScript==
 // @name         FTC FTA/FS assistant
-// @version      0.2.0
+// @version      0.3.0
 // @description  Augment the match cycle time with some FS fun stuff
 // @author       Austin Frownfelter
 // @match        http://localhost/event/*/schedule/
+// @match        http://localhost/event/*/practice/
+// @match        http://localhost/event/*/reports/cycle/
 // @grant        GM_addStyle
 // ==/UserScript==
 
@@ -16,6 +18,10 @@
     const red2Selector = `${matchTableRowId} td:nth-child(5)`;
     const blue1Selector = `${matchTableRowId} td:nth-child(6)`;
     const blue2Selector = `${matchTableRowId} td:nth-child(7)`;
+    const red1CycleTimeSelector = `${matchTableRowId} td:nth-child(2)`;
+    const red2CycleTimeSelector = `${matchTableRowId} td:nth-child(3)`;
+    const blue1CycleTimeSelector = `${matchTableRowId} td:nth-child(4)`;
+    const blue2CycleTimeSelector = `${matchTableRowId} td:nth-child(5)`;
 
     const rowCustomStyleClass = 'my-fta';
     const rowSelectedClass = 'row-selected';
@@ -62,11 +68,17 @@
     }
 
     var addSelectedTeamMatches = (team) => {
+        if (!team) {
+            return
+        }
         const $teamOthers = $(`[team=${team}]:not('.team-selected')`);
         $teamOthers.addClass(teamSelectedOtherClass);
         console.log($teamOthers);
     }
     var clearSelectedTeamMatches = (team) => {
+        if (!team) {
+            return
+        }
         const $teamOthers = $(`[team=${team}]`);
         $teamOthers.removeClass(teamSelectedOtherClass);
         console.log("clearing", $teamOthers);
@@ -152,7 +164,7 @@ ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
 
         $teamElements.map((ind, el) => {
             const text = el.innerText;
-            const team = text.replaceAll("*","");
+            const team = text.replaceAll("*","").trim();
             $(el).addClass(`team-${team}`);
             $(el).attr('team',team);
             console.log(text, team);
@@ -163,10 +175,17 @@ ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
 
     var createTeamHighlightHandler = function () {
         console.log("### Creating team highlight handler");
-        $(red1Selector).addClass('team red-1');
-        $(red2Selector).addClass('team red-2');
-        $(blue1Selector).addClass('team blue-1');
-        $(blue2Selector).addClass('team blue-2');
+        if ($('.team')) { // team already exists (cycle time report)
+            $(red1CycleTimeSelector).addClass('red-1');
+            $(red2CycleTimeSelector).addClass('red-2');
+            $(blue1CycleTimeSelector).addClass('blue-1');
+            $(blue2CycleTimeSelector).addClass('blue-2');
+        } else {
+            $(red1Selector).addClass('team red-1');
+            $(red2Selector).addClass('team red-2');
+            $(blue1Selector).addClass('team blue-1');
+            $(blue2Selector).addClass('team blue-2');
+        }
 
         addTeamNumberSelector();
         //$(`${matchTableRowId}`).bind('click', toggleSelectedTeam);
