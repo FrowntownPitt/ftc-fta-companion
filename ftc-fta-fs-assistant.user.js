@@ -1,16 +1,20 @@
 // ==UserScript==
 // @name         FTC FTA/FS assistant
-// @version      0.4.2
+// @version      0.4.3
 // @description  Augment the match cycle time with some FS fun stuff
 // @author       Austin Frownfelter
 // @match        http://*/event/*/schedule/
 // @match        http://*/event/*/practice/
 // @match        http://*/event/*/reports/cycle/
 // @grant        GM_addStyle
+// @grant        GM.addStyle
+// @require      http://code.jquery.com/jquery-3.7.1.min.js#sha256=/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=
 // ==/UserScript==
 
 (function() {
     'use strict';
+
+    console.log("### starting main");
 
     const pageLoadedIdentifier = ".table.table-striped";
     const matchTableRowId = ".table.table-striped tbody tr";
@@ -163,7 +167,7 @@
         $matchTableRowIds.bind('click', toggleSelectedRow);
         $matchTableRowIds.addClass(rowCustomStyleClass);
 
-        GM_addStyle(`
+        GM.addStyle(`
 ${matchTableRowId}:focus,
 ${matchTableRowId}:hover {
   background-color: ${styles.highlights.rowHover} !important;
@@ -218,7 +222,7 @@ ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
         addTeamNumberSelector();
         $(`${matchTableRowId}`).click(toggleSelectedTeam);
 
-        GM_addStyle(`
+        GM.addStyle(`
 .team.team-selected {
   background-color: ${styles.highlights.team} !important;
 }
@@ -230,6 +234,7 @@ ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
     };
 
     var waitForElement = function (selector, callback) {
+        console.log("### WAITING");
         if ($(selector).length) {
             callback();
         } else {
@@ -240,6 +245,7 @@ ${matchTableRowId}.${rowCustomStyleClass}.${rowSelectedClass}:hover {
     };
 
     waitForElement(pageLoadedIdentifier, function () {
+        console.log("### WAITED, RUNNING");
         createTeamHighlightHandler();
         createRowHighlightHandler();
     });
