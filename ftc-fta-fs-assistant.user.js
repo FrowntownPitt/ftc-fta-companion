@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         FTC FTA/FS assistant
-// @version      0.5.1
+// @version      0.5.2
 // @description  Augment the match cycle time with some FS fun stuff
 // @author       Austin Frownfelter
 // @match        http://*/event/*/schedule/
@@ -25,6 +25,7 @@
 0.4.4 - alpha - add to playoff with broken functionality
 0.5.0 - Make selected row persist across refreshes for my sanity on cycle time reports
 0.5.1 - Add a refresh button because iPad Safari is annoying and forces you to scroll the whole way up to show the chrome
+0.5.2 - Adjust colors so the blues are on the blue alliance
 */
 
 (function() {
@@ -60,10 +61,10 @@
             rowHover: '#fcfc6ab8',
             team: '#ffd483',
             teamOther: '#ed9547b2',
-            latest0: '#86b5fe',
-            latest1: '#86e7fe',
-            latest2: '#e486fe',
-            latest3: '#8ffe86'
+            latest0: '#e486fe',
+            latest1: '#8ffe86',
+            latest2: '#86b5fe',
+            latest3: '#86e7fe',
         }
     }
 
